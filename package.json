@@ -1,0 +1,33 @@
+{
+  "name": "legalpulse-v3",
+  "version": "1.0.0",
+  "description": "Bot Telegram para gestao de processos, audiencias e integracao com Google Calendar",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "legal",
+    "processos",
+    "google-calendar"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.7",
+    "dotenv": "^16.6.1",
+    "google-auth-library": "^9.15.1",
+    "googleapis": "^131.0.0",
+    "mongoose": "^7.8.7",
+    "pdfkit": "^0.14.0",
+    "puppeteer": "^22.0.0",
+    "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
