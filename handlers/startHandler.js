@@ -1,106 +1,78 @@
+
+
+export function setupWelcomeMessage(bot) {
+  bot.on('new_chat_members', async (ctx) => {
+    await ctx.reply('👋 Olá! Para começar, clique no botão "Iniciar" abaixo do nome do bot ou digite /start no chat.');
+  });
+  bot.on('chat_join_request', async (ctx) => {
+    await ctx.reply('👋 Seja bem-vindo! Para ativar o bot, clique em "Iniciar" ou digite /start.');
+  });
+  // Mensagem para chats privados ao abrir o bot (primeira mensagem)
+  bot.on('my_chat_member', async (ctx) => {
+    if (ctx.chat && ctx.chat.type === 'private') {
+      await ctx.reply('👋 Olá! Para começar, clique no botão "Iniciar" ou digite /start.');
+    }
+  });
+}
+// handlers/startHandler.js
 import { Markup } from 'telegraf';
 import { initialMenu } from '../menu/initialMenu.js';
-import { pushState, popState, getCurrentState } from '../utils/stateManager.js';
-import { oabResultsCache } from './lawyerHandler.js'; // Corrigido caminho relativo
+import { pushState, resetState } from '../utils/stateManager.js';
+import Advogado from '../database/models/Advogado.js';
 
 export function setupStartHandler(bot) {
-  console.log('⚙️ startHandler carregado ✅'); // ← Verificação no terminal
-
-  // ✅ Teste básico de resposta do bot
-  bot.command('ping', async (ctx) => {
-    console.log('📡 Comando /ping recebido');
-    await ctx.reply('🏓 pong');
-  });
-
-  // ✅ Comando para testar submenu de audiências
-  bot.command('teste_menu', async (ctx) => {
-    console.log('🧪 Comando /teste_menu acionado');
-
-    await ctx.reply('⏳ *Audiências e Perícias*', {
-      parse_mode: 'Markdown',
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: '📅 Pauta do Dia', callback_data: 'pauta_dia' }],
-          [{ text: '📂 Todas as Audiências/Perícias', callback_data: 'todas_audiencias' }],
-          [{ text: '➕ Cadastrar Nova Audiência', callback_data: 'cadastrar_audiencia' }],
-          [{ text: '🧪 Cadastrar Nova Perícia', callback_data: 'cadastrar_pericia' }],
-          [{ text: '🖨️ Gerar PDF da Pauta do Dia', callback_data: 'gerar_pdf' }],
-          [{ text: '⏰ Lembretes Definidos', callback_data: 'lembretes_definidos' }],
-          [{ text: '⬅️ Voltar', callback_data: 'back' }]
-        ]
-      }
-    });
-  });
-
-  // ⚙️ Comando /start
-  bot.start((ctx) => {
-    console.log('🚀 Comando /start acionado');
+  // Handler para botão 'Iniciar' no menu principal
+  bot.action('main_menu', async (ctx) => {
+    resetState(ctx);
     pushState(ctx, 'main_menu');
-    ctx.reply(
-      '👋 Olá! Seja bem-vindo ao LegalPulseBot. Como posso te ajudar hoje?',
-      initialMenu()
-    );
+    await initialMenu(ctx);
   });
-
-  // ⚙️ Comando /menu
-  bot.command('menu', (ctx) => {
-    console.log('📥 Comando /menu acionado');
-    pushState(ctx, 'main_menu');
-    ctx.reply('⬅️ Voltando para o Menu Principal:', initialMenu());
-  });
-
-  // 🔙 Botão "Voltar"
+  // Handler global para botão Voltar
   bot.action('back', async (ctx) => {
-    console.log('🔙 Botão "Voltar" pressionado');
-    popState(ctx);
-    const previousState = getCurrentState(ctx);
+    resetState(ctx);
+    pushState(ctx, 'main_menu');
+    await initialMenu(ctx);
+  });
+  console.log('⚙️ startHandler carregado ✅');
 
-    if (!previousState) {
-      console.log('📦 Nenhum estado anterior, voltando ao menu principal');
-      return ctx.editMessageText('⬅️ Menu Principal:', initialMenu());
-    }
+  // Comando /start → Menu inicial
+  bot.start(async (ctx) => {
+    resetState(ctx);
+    pushState(ctx, 'main_menu');
+    console.log(`📲 Usuário ${ctx.from?.username || ctx.from?.id} iniciou /start → Estado: main_menu`);
+    await initialMenu(ctx);
+  });
 
-    console.log('↩️ Voltando para o estado:', previousState.state);
+  // Botão "Cadastrar Advogado"
+  bot.action('register_lawyer', async (ctx) => {
+    pushState(ctx, 'awaiting_oab');
+    console.log(`🆕 Usuário ${ctx.from?.username || ctx.from?.id} iniciou cadastro de advogado → Estado: awaiting_oab`);
 
     try {
-      switch (previousState.state) {
-        case 'awaiting_oab':
-          await ctx.editMessageText(
-            '🆔 Envie o número da OAB que você deseja consultar (somente números).',
-            {
-              reply_markup: Markup.inlineKeyboard([
-                [Markup.button.callback('⬅️ Voltar', 'back')]
-              ]).reply_markup
-            }
-          );
-          break;
-
-        case 'selecting_advogado': {
-          const userId = ctx.from.id;
-          const resultados = oabResultsCache.get(userId);
-
-          if (resultados && resultados.length > 0) {
-            const buttons = resultados.map((adv, index) => [
-              Markup.button.callback(`${adv.name} (${adv.inscription})`, `select_advogado_${index}`)
-            ]);
-
-            await ctx.editMessageText('👤 Selecione o advogado que deseja cadastrar:', {
-              reply_markup: Markup.inlineKeyboard([...buttons, [Markup.button.callback('⬅️ Voltar', 'back')]]).reply_markup
-            });
-          } else {
-            await ctx.editMessageText('⚠️ Não há dados de advogados em cache.', initialMenu());
-          }
-          break;
-        }
-
-        case 'main_menu':
-        default:
-          console.log('🧭 Estado não reconhecido, voltando para o menu principal');
-          await ctx.editMessageText('⬅️ Menu Principal:', initialMenu());
-      }
+      await ctx.editMessageText('✏️ Digite o *número da OAB* do advogado:', { parse_mode: 'Markdown' });
     } catch (err) {
-      console.error('❌ Erro ao voltar para estado anterior:', err);
-      await ctx.reply('❌ Ocorreu um erro ao retornar.');
+      console.error('⚠️ Erro ao editar mensagem em register_lawyer:', err.message);
+      await ctx.reply('✏️ Digite o *número da OAB* do advogado:', { parse_mode: 'Markdown' });
     }
+  });
+
+
+  // Botão "Voltar ao Menu"
+  bot.action('back_to_menu', async (ctx) => {
+    resetState(ctx);
+    pushState(ctx, 'main_menu');
+    console.log(`🔙 Usuário ${ctx.from?.username || ctx.from?.id} voltou ao menu inicial`);
+    await initialMenu(ctx);
+  });
+
+  // Handler para menu de Audiências/Perícias
+  bot.action('menu_audiencia_pericia', async (ctx) => {
+    const { audienciaPericiaMenu } = await import('../menu/audienciaPericiaMenu.js');
+    await ctx.editMessageText('📅 Menu de Audiências/Perícias:', audienciaPericiaMenu());
+  });
+
+  // Handler para menu de Biblioteca/Processos
+  bot.action('menu_biblioteca_processos', async (ctx) => {
+    await ctx.editMessageText('📚 Menu de Biblioteca/Processos (em construção).');
   });
 }

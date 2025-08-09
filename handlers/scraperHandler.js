@@ -1,9 +1,9 @@
 // handlers/scraperHandler.js
 import { checkTJRJ } from '../scrapers/tj_rj.js';
 import { checkDJEN } from '../scrapers/djen.js';
-import { checkOAB } from '../scrapers/oab.js';
+import { checkOAB } from '../scrapers/checkOAB.js';
 
-export function setupScraperHandlers(bot) {
+export function setupScraperHandler(bot) {
   bot.action('search_oab_intimation', async (ctx) => {
     await ctx.reply('🔍 Buscando intimações na OAB...');
     const result = await checkOAB();

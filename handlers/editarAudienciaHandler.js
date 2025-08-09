@@ -63,19 +63,25 @@ export function setupEditarAudienciaHandler(bot) {
       switch (state.state) {
         case 'editando_nome_partes':
           await Audiencia.findByIdAndUpdate(audienciaId, { partes: text });
-          await ctx.reply('✅ Nome das partes atualizado com sucesso.');
+          await ctx.reply('✅ Nome das partes atualizado com sucesso.',
+            Markup.inlineKeyboard([[Markup.button.callback('⬅️ Voltar', 'back')]])
+          );
           popState(ctx);
           break;
 
         case 'editando_dia':
           await Audiencia.findByIdAndUpdate(audienciaId, { data: text });
-          await ctx.reply('✅ Data atualizada com sucesso.');
+          await ctx.reply('✅ Data atualizada com sucesso.',
+            Markup.inlineKeyboard([[Markup.button.callback('⬅️ Voltar', 'back')]])
+          );
           popState(ctx);
           break;
 
         case 'editando_hora':
           await Audiencia.findByIdAndUpdate(audienciaId, { horario: text });
-          await ctx.reply('✅ Horário atualizado com sucesso.');
+          await ctx.reply('✅ Horário atualizado com sucesso.',
+            Markup.inlineKeyboard([[Markup.button.callback('⬅️ Voltar', 'back')]])
+          );
           popState(ctx);
           break;
 
@@ -84,7 +90,9 @@ export function setupEditarAudienciaHandler(bot) {
       }
     } catch (err) {
       console.error('❌ Erro ao editar audiência:', err);
-      await ctx.reply('❌ Ocorreu um erro ao editar a audiência.');
+      await ctx.reply('❌ Ocorreu um erro ao editar a audiência.',
+        Markup.inlineKeyboard([[Markup.button.callback('⬅️ Voltar', 'back')]])
+      );
       popState(ctx);
     }
   });

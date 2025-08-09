@@ -9,6 +9,10 @@ const audienciaSchema = new mongoose.Schema({
   data: { type: String, required: true },
   horario: { type: String, required: true },
   comarca: { type: String, required: true },
+  processo: { type: String, required: false },
+  concluida: { type: Boolean, default: false },
+  acordo: { type: Boolean, default: null },
+  valorAcordo: { type: String, default: null },
   userId: { type: Number, required: true },
 });
 

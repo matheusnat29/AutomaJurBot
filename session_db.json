@@ -1,0 +1,24 @@
+{
+  "sessions": [
+    {
+      "id": "1217203871:1217203871",
+      "data": {
+        "audiencia": {
+          "data": "14/08/2025",
+          "step": 6,
+          "hora": "14:00",
+          "processo": "0800122-30.2024.8.19.0035",
+          "comarca": "Natividade"
+        },
+        "pericia": {},
+        "novaAudiencia": null,
+        "lastBotMessageId": 547,
+        "concluirId": "6896a483da017c3b4dbc5313",
+        "botMessageIds": [
+          989
+        ],
+        "lastUserMessageId": 972
+      }
+    }
+  ]
+}

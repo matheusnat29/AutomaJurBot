@@ -13,9 +13,30 @@ const scopes = ['https://www.googleapis.com/auth/calendar.events'];
 export const authUrl = oauth2Client.generateAuthUrl({
   access_type: 'offline',
   scope: scopes,
-  prompt: 'consent'
+  prompt: 'consent',
+  redirect_uri: process.env.GOOGLE_REDIRECT_URI
 });
 
+/**
+ * Troca o código de autorização pelos tokens do Google
+ * @param {string} code - Código retornado pelo Google OAuth
+ * @returns {object} Tokens de acesso e atualização
+ */
+export async function exchangeCodeForTokens(code) {
+  try {
+    const { tokens } = await oauth2Client.getToken(code);
+    return tokens;
+  } catch (err) {
+    console.error('❌ Erro ao trocar código por tokens:', err);
+    throw err;
+  }
+}
+
+/**
+ * Cria um evento no Google Calendar
+ * @param {object} tokens - Tokens de autenticação do usuário
+ * @param {object} pauta - Dados da pauta/audiência
+ */
 export async function createGoogleCalendarEvent(tokens, pauta) {
   if (!tokens) {
     throw new Error('Usuário não autenticado.');

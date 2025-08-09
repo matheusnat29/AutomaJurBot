@@ -1,5 +1,5 @@
 // handlers/libraryHandler.js
-export function setupLibraryHandlers(bot) {
+export function setupLibraryHandler(bot) {
   bot.action(/save_process_to_library_(.+)_(.+)/, async (ctx) => {
     await ctx.reply(`📁 Processo ${ctx.match[1]} salvo na biblioteca ${ctx.match[2]}`);
   });

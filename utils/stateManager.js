@@ -1,38 +1,64 @@
 // utils/stateManager.js
 
-const userHistory = new Map();
+// Armazena estados na memória (pode ser substituído por banco/Redis futuramente)
+const userStates = new Map();
 
+/**
+ * Define o estado do usuário com dados extras.
+ * @param {Object} ctx - Contexto do Telegraf
+ * @param {string} state - Novo estado
+ * @param {Object} [data={}] - Dados adicionais
+ */
 export function pushState(ctx, state, data = {}) {
-  const userId = ctx.from.id;
-  let history = userHistory.get(userId) || [];
-  history.push({ state, data });
-  userHistory.set(userId, history);
+  const userId = ctx?.from?.id;
+  if (!userId) return;
+
+  userStates.set(userId, { state, data });
 }
 
+/**
+ * Remove o estado do usuário e retorna o que foi removido.
+ * @param {Object} ctx - Contexto do Telegraf
+ * @returns {Object|null} - Estado anterior
+ */
 export function popState(ctx) {
-  const userId = ctx.from.id;
-  let history = userHistory.get(userId);
-  if (history && history.length > 1) {
-    history.pop();
-    userHistory.set(userId, history);
-  }
-  return userHistory.get(userId);
+  const userId = ctx?.from?.id;
+  if (!userId) return null;
+
+  const prevState = userStates.get(userId) || null;
+  userStates.delete(userId);
+  return prevState;
 }
 
-export function getCurrentState(ctx) {
-  const userId = ctx.from.id;
-  const history = userHistory.get(userId);
-  return history && history.length > 0 ? history[history.length - 1] : null;
-}
-
-export function getPreviousState(ctx) {
-  const userId = ctx.from.id;
-  const history = userHistory.get(userId);
-  return history && history.length > 1 ? history[history.length - 2] : null;
-}
-
-// >>> NOVA FUNÇÃO PARA RESETAR ESTADOS <<<
+/**
+ * Reseta o estado do usuário (mesmo que popState, mas sem retorno).
+ * @param {Object} ctx - Contexto do Telegraf
+ */
 export function resetState(ctx) {
-  const userId = ctx.from.id;
-  userHistory.set(userId, [{ state: 'main_menu' }]);
+  const userId = ctx?.from?.id;
+  if (userId) {
+    userStates.delete(userId);
+  }
+}
+
+/**
+ * Retorna o estado atual do usuário.
+ * @param {Object} ctx - Contexto do Telegraf
+ * @returns {Object|null} - Objeto com { state, data } ou null
+ */
+export function getCurrentState(ctx) {
+  const userId = ctx?.from?.id;
+  if (!userId) return null;
+
+  return userStates.get(userId) || null;
+}
+
+/**
+ * Verifica se o usuário está em um estado específico.
+ * @param {Object} ctx - Contexto do Telegraf
+ * @param {string} expectedState - Estado esperado
+ * @returns {boolean}
+ */
+export function isInState(ctx, expectedState) {
+  return getCurrentState(ctx)?.state === expectedState;
 }

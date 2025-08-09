@@ -17,8 +17,11 @@ export function setupTodasAudienciasHandler(bot) {
     }
 
     const buttons = audiencias.map((aud, index) => {
-      const textoBotao = `${index + 1}. ${aud.autor} x ${aud.reu} - ${aud.dia} ${aud.horario} - ${aud.comarca}`;
-      return [Markup.button.callback(textoBotao, `ver_audiencia_${aud._id}`)];
+  const statusEmoji = aud.concluida ? '✅' : '⚖️';
+  // Não mostrar o número do processo no resumo
+  const textoBotao = `${statusEmoji} ${index + 1}. ${aud.autor} x ${aud.reu} | ${aud.dia} ${aud.horario}`;
+  // Remover qualquer ocorrência de processo do texto do botão
+  return [Markup.button.callback(textoBotao.replace(/Proc\.?\s*[:=]?\s*[^|]+\|?/gi, ''), `ver_audiencia_${aud._id}`)];
     });
 
     await ctx.editMessageText('📂 *Todas as Audiências/Perícias:*', {
@@ -38,13 +41,14 @@ export function setupTodasAudienciasHandler(bot) {
 
     pushState(ctx, 'visualizando_audiencia', { audienciaId });
 
-    const texto = `
+  const texto = `
 *Autor:* ${audiencia.autor}
 *Réu:* ${audiencia.reu}
-*Representa:* ${audiencia.representa}
-*Dia:* ${audiencia.dia}
+*Representa:* ${audiencia.parteRepresentada}
+*Dia:* ${audiencia.data}
 *Horário:* ${audiencia.horario}
-*Comarca:* ${audiencia.comarca}`;
+*Comarca:* ${audiencia.comarca}
+*Processo:* ${audiencia.processo && audiencia.processo !== '' ? audiencia.processo : '—'}`;
 
     await ctx.editMessageText(texto, {
       parse_mode: 'Markdown',

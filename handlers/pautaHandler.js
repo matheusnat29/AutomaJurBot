@@ -10,14 +10,16 @@ const cadastredPericias = [
   { id: 2, poloAtivo: 'MARIA', poloPassivo: 'LOJA DA ESQUINA', comarca: 'NATIVIDADE-RJ', dia: '10/08/2025', horario: '10:30', nota: '' }
 ];
 
-export function setupPautaHandlers(bot) {
+export function setupPautaHandler(bot) {
   bot.action('pautas_do_dia', async (ctx) => {
     pushState(ctx, 'pautas_do_dia');
     const hoje = '05/08/2025'; // Simulado para teste
     const pautasHoje = cadastredPericias.filter(p => p.dia === hoje);
 
     if (pautasHoje.length === 0) {
-      await ctx.editMessageText('📅 Nenhuma pauta cadastrada para hoje.', audienciaPericiaMenu());
+      await ctx.editMessageText('📅 Nenhuma pauta cadastrada para hoje.',
+        Markup.inlineKeyboard([[Markup.button.callback('⬅️ Voltar', 'back')]])
+      );
       return;
     }
 
@@ -37,7 +39,9 @@ export function setupPautaHandlers(bot) {
     const pauta = cadastredPericias.find(p => p.id === pautaId);
 
     if (!pauta) {
-      return ctx.reply('❌ Pauta não encontrada.');
+      return ctx.reply('❌ Pauta não encontrada.',
+        Markup.inlineKeyboard([[Markup.button.callback('⬅️ Voltar', 'back')]])
+      );
     }
 
     await ctx.editMessageText(
@@ -69,7 +73,9 @@ export function setupPautaHandlers(bot) {
       return ctx.reply('❌ Pauta não encontrada.');
     }
 
-    await ctx.reply(`📝 Nota atual: ${pauta.nota || 'Nenhuma nota adicionada.'}`);
+    await ctx.reply(`📝 Nota atual: ${pauta.nota || 'Nenhuma nota adicionada.'}`,
+      Markup.inlineKeyboard([[Markup.button.callback('⬅️ Voltar', 'back')]])
+    );
   });
 
   bot.action(/confirm_delete_pauta_(.+)/, async (ctx) => {
@@ -86,9 +92,13 @@ export function setupPautaHandlers(bot) {
     const index = cadastredPericias.findIndex(p => p.id === pautaId);
     if (index !== -1) {
       cadastredPericias.splice(index, 1);
-      await ctx.editMessageText('✅ Pauta excluída com sucesso.', audienciaPericiaMenu());
+      await ctx.editMessageText('✅ Pauta excluída com sucesso.',
+        Markup.inlineKeyboard([[Markup.button.callback('⬅️ Voltar', 'back')]])
+      );
     } else {
-      await ctx.editMessageText('❌ Pauta não encontrada.', audienciaPericiaMenu());
+      await ctx.editMessageText('❌ Pauta não encontrada.',
+        Markup.inlineKeyboard([[Markup.button.callback('⬅️ Voltar', 'back')]])
+      );
     }
     popState(ctx);
   });

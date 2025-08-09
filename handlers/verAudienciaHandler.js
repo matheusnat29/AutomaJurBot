@@ -8,53 +8,66 @@ import { initialMenu } from '../menu/initialMenu.js';
 export function setupVerAudienciaHandler(bot) {
   // Visualizar detalhes da audiência
   bot.action(/ver_audiencia_(.+)/, async (ctx) => {
-    const audienciaId = ctx.match[1];
-    const userId = ctx.from.id;
+  const audienciaId = ctx.match[1];
+  const userId = ctx.from.id;
 
-    try {
-      const audiencia = await Audiencia.findOne({ _id: audienciaId, userId });
-
-      if (!audiencia) {
-        return ctx.editMessageText('❌ Audiência não encontrada.', initialMenu());
-      }
-
-      const dataHora = `${audiencia.dia} às ${audiencia.horario}`;
-      const parte = audiencia.parteRepresentada ? `🧑‍💼 ${audiencia.parteRepresentada}` : 'Não informado';
-
-      const texto = `📌 *Audiência*
-
-👥 *${audiencia.autor} x ${audiencia.reu}*
-👤 ${parte}
-📅 ${dataHora}
-📍 ${audiencia.comarca}`;
-
-      await ctx.editMessageText(texto, {
-        parse_mode: 'Markdown',
-        reply_markup: Markup.inlineKeyboard([
-          [Markup.button.callback('✏️ Editar', `editar_audiencia_${audienciaId}`)],
-          [Markup.button.callback('🗑️ Excluir', `confirmar_excluir_audiencia_${audienciaId}`)],
-          [Markup.button.callback('⏰ Definir Lembrete', `definir_lembrete_audiencia_${audienciaId}`)],
-          [Markup.button.callback('⬅️ Voltar', 'back')],
-        ]).reply_markup
+  try {
+    const audiencia = await Audiencia.findOne({ _id: audienciaId, userId });
+    if (!audiencia) {
+      return ctx.editMessageText('❌ Audiência não encontrada.', {
+        ...initialMenu(),
+        reply_markup: Markup.inlineKeyboard([[Markup.button.callback('⬅️ Voltar', 'back')]]).reply_markup
       });
-    } catch (err) {
-      console.error('❌ Erro ao visualizar audiência:', err);
-      await ctx.reply('❌ Erro ao visualizar audiência.');
     }
-  });
 
-  // Confirmação de exclusão
-  bot.action(/confirmar_excluir_audiencia_(.+)/, async (ctx) => {
-    const audienciaId = ctx.match[1];
-    pushState(ctx, 'confirmando_exclusao_audiencia', { audienciaId });
+    const statusEmoji = audiencia.concluida ? '✅' : '⚖️';
+    const autor = audiencia.autor || '—';
+    const reu = audiencia.reu || '—';
+    const parte = audiencia.parteRepresentada || '—';
+    const dataStr = audiencia.data || '—';
+    const horaStr = audiencia.horario || '—';
+    const processo = audiencia.processo || '—';
+    const comarca = audiencia.comarca || '—';
 
-    await ctx.editMessageText('⚠️ Deseja realmente excluir esta audiência?', {
+    let acordoInfo = '';
+    if (audiencia.concluida) {
+      if (audiencia.acordo === true) {
+        acordoInfo = '<br>🤝 <b>Acordo realizado</b>';
+        if (audiencia.valorAcordo) acordoInfo += `<br>💰 <b>Valor:</b> R$ ${audiencia.valorAcordo}`;
+      } else if (audiencia.acordo === false) {
+        acordoInfo = '<br>❌ <b>Sem acordo</b>';
+      }
+    }
+
+    const texto = `${statusEmoji} *Audiência*
+` +
+      `👥 *Autor:* ${autor}\n` +
+      `👤 *Réu:* ${reu}\n` +
+      `🧑‍💼 *Parte Representada:* ${parte}\n` +
+      `📅 *Dia:* ${dataStr}\n` +
+      `⏰ *Horário:* ${horaStr}\n` +
+      `📄 *Processo:* ${processo}\n` +
+      `🏛️ *Comarca:* ${comarca}` + (acordoInfo ? `\n${acordoInfo.replace(/<br>/g, '\n').replace(/<b>|<\/b>/g, '')}` : '');
+
+    await ctx.editMessageText(texto, {
+      parse_mode: 'Markdown',
       reply_markup: Markup.inlineKeyboard([
-        [Markup.button.callback('✅ Sim, excluir', `excluir_audiencia_${audienciaId}`)],
-        [Markup.button.callback('❌ Cancelar', 'back')]
+        [Markup.button.callback('🔔 Agendar Notificação', `agendar_notificacao_audiencia_${audienciaId}`)],
+        [Markup.button.callback('✏️ Editar', `editar_audiencia_${audienciaId}`)],
+        [Markup.button.callback('⏰ Definir Lembrete', `definir_lembrete_audiencia_${audienciaId}`)],
+        [Markup.button.callback('✅ Concluir', `concluir_audiencia_${audienciaId}`)],
+        [Markup.button.callback('🗑️ Excluir', `confirmar_excluir_audiencia_${audienciaId}`)],
+        [Markup.button.callback('⬅️ Voltar', 'back')],
       ]).reply_markup
     });
-  });
+  } catch (err) {
+    console.error('❌ Erro ao visualizar audiência:', err);
+    await ctx.reply('❌ Erro ao visualizar audiência.',
+      Markup.inlineKeyboard([[Markup.button.callback('⬅️ Voltar', 'back')]])
+    );
+  }
+});
+
 
   // Excluir audiência
   bot.action(/excluir_audiencia_(.+)/, async (ctx) => {
@@ -64,10 +77,17 @@ export function setupVerAudienciaHandler(bot) {
     try {
       await Audiencia.findOneAndDelete({ _id: audienciaId, userId });
       popState(ctx);
-      await ctx.editMessageText('✅ Audiência excluída com sucesso.', initialMenu());
+      await ctx.editMessageText('✅ Audiência excluída com sucesso.',
+        {
+          ...initialMenu(),
+          reply_markup: Markup.inlineKeyboard([[Markup.button.callback('⬅️ Voltar', 'back')]]).reply_markup
+        }
+      );
     } catch (err) {
       console.error('❌ Erro ao excluir audiência:', err);
-      await ctx.reply('❌ Erro ao excluir audiência.');
+      await ctx.reply('❌ Erro ao excluir audiência.',
+        Markup.inlineKeyboard([[Markup.button.callback('⬅️ Voltar', 'back')]])
+      );
     }
   });
 }

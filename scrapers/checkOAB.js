@@ -1,3 +1,4 @@
+// scrapers/checkOAB.js
 import puppeteer from 'puppeteer';
 
 export async function checkOAB(numero, uf = 'RJ', tipo = 'ADVOGADO') {
@@ -15,7 +16,7 @@ export async function checkOAB(numero, uf = 'RJ', tipo = 'ADVOGADO') {
         console.log('✏️ Preenchendo número de inscrição...');
         await page.waitForSelector('#txtInsc', { timeout: 15000 });
         await page.type('#txtInsc', numero);
-        
+
         console.log('🖱️ Clicando em Pesquisar...');
         await page.click('#btnFind');
 
@@ -26,17 +27,14 @@ export async function checkOAB(numero, uf = 'RJ', tipo = 'ADVOGADO') {
             return divs.map(div => {
                 const nameElement = div.querySelector('.rowName span:last-child');
                 const inscriptionElement = div.querySelector('.rowInsc span:last-child');
-                
-                const name = nameElement ? nameElement.innerText.trim() : 'Nome não encontrado';
-                const inscription = inscriptionElement ? inscriptionElement.innerText.trim() : 'Inscrição não encontrada';
 
-                return {
-                    name: name,
-                    inscription: inscription
-                };
+                const nome = nameElement ? nameElement.innerText.trim() : 'Nome não encontrado';
+                const oab = inscriptionElement ? inscriptionElement.innerText.trim() : 'Inscrição não encontrada';
+
+                return { nome, oab };
             });
         });
-        
+
         console.log(`✅ Resultados encontrados: ${resultados.length}`);
         return resultados;
     } catch (error) {

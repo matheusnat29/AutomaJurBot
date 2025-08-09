@@ -2,7 +2,7 @@
 import { Markup } from 'telegraf';
 import { pushState, popState, getCurrentState } from '../utils/stateManager.js';
 
-export function setupHonorarioHandlers(bot) {
+export function setupHonorarioHandler(bot) {
   bot.action('finances', async (ctx) => {
     pushState(ctx, 'finances_menu');
     await ctx.editMessageText('💰 Menu de finanças (honorários, recebíveis, etc.) em construção.', Markup.inlineKeyboard([

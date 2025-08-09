@@ -1,7 +1,7 @@
 // handlers/processActionsHandler.js
 import { statusSelectionMenu } from '../menu/statusSelectionMenu.js';
 
-export function setupProcessActionsHandlers(bot) {
+export function setupProcessActionsHandler(bot) {
   bot.action(/edit_parties_(.+)_(.+)/, async (ctx) => {
     await ctx.reply(`✏️ Edição de polos para o processo ${ctx.match[1]} na biblioteca ${ctx.match[2]}`);
   });

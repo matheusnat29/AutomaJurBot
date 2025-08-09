@@ -4,7 +4,7 @@ import { Markup } from 'telegraf';
 import { getCurrentState, pushState, popState } from '../utils/stateManager.js';
 import { initialMenu } from '../menu/initialMenu.js';
 import { oauth2Client, createGoogleCalendarEvent } from '../utils/googleCalendar.js';
-import userTokens from '../utils/userTokens.js';
+import { userTokens } from '../utils/userTokens.js';
 
 export function setupDefinirLembreteHandler(bot) {
   bot.action(/set_reminder_(.+)/, async (ctx) => {

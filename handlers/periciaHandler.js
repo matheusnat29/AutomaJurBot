@@ -4,7 +4,7 @@ import { Markup } from 'telegraf';
 import { pushState, getCurrentState, popState } from '../utils/stateManager.js';
 import Pericia from '../database/models/Pericia.js';
 
-export function setupPericiaHandlers(bot) {
+export function setupPericiaHandler(bot) {
   bot.action('cadastrar_pericia', async (ctx) => {
     console.log('🧪 Ação cadastrar_pericia acionada');
     pushState(ctx, 'pericia_nome_parte');
@@ -50,11 +50,14 @@ export function setupPericiaHandlers(bot) {
           await Pericia.create({ userId, nomeParte, data, horario: text });
           console.log('✅ Perícia salva no banco de dados');
           await ctx.reply('✅ Perícia cadastrada com sucesso!', Markup.inlineKeyboard([
-            [Markup.button.callback('⬅️ Voltar ao menu', 'back')]
+            [Markup.button.callback('⬅️ Voltar ao menu', 'back')],
+            [Markup.button.callback('⬅️ Voltar', 'back')]
           ]));
         } catch (err) {
           console.error('❌ Erro ao salvar perícia:', err);
-          await ctx.reply('❌ Erro ao salvar perícia.');
+          await ctx.reply('❌ Erro ao salvar perícia.',
+            Markup.inlineKeyboard([[Markup.button.callback('⬅️ Voltar', 'back')]])
+          );
         }
 
         popState(ctx);
