@@ -70,9 +70,5 @@ export function setupStartHandler(bot) {
     const { audienciaPericiaMenu } = await import('../menu/audienciaPericiaMenu.js');
     await ctx.editMessageText('📅 Menu de Audiências/Perícias:', audienciaPericiaMenu());
   });
-
-  // Handler para menu de Biblioteca/Processos
-  bot.action('menu_biblioteca_processos', async (ctx) => {
-    await ctx.editMessageText('📚 Menu de Biblioteca/Processos (em construção).');
-  });
+  // Handler para menu de Biblioteca/Processos removido para não sobrescrever o handler real
 }

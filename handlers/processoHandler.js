@@ -13,16 +13,6 @@ export function setupProcessoHandler(bot) {
     );
   });
 
-  bot.action('my_libraries', async (ctx) => {
-    pushState(ctx, 'my_libraries');
-    await ctx.editMessageText(
-      '📚 Funcionalidade de bibliotecas em desenvolvimento.',
-      Markup.inlineKeyboard([
-        [Markup.button.callback('⬅️ Voltar', 'back')]
-      ])
-    );
-  });
-
   bot.on('text', async (ctx, next) => {
     const currentState = getCurrentState(ctx);
 

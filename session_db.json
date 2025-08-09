@@ -11,13 +11,14 @@
           "comarca": "Natividade"
         },
         "pericia": {},
-        "novaAudiencia": null,
+        "novaAudiencia": {},
         "lastBotMessageId": 547,
         "concluirId": "6896a483da017c3b4dbc5313",
-        "botMessageIds": [
-          989
-        ],
-        "lastUserMessageId": 972
+        "botMessageIds": [],
+        "lastUserMessageId": 1186,
+        "aguardandoNomeBiblioteca": false,
+        "cadastrandoProcessoBibliotecaId": "6896d7ca2ef479ffd4c6b61b",
+        "cadastrandoProcessoEtapa": "pergunta_final"
       }
     }
   ]
