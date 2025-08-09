@@ -37,6 +37,7 @@ import { setupPericiaHandler } from './handlers/periciaHandler.js';
 import { setupScraperHandler } from './handlers/scraperHandler.js';
 import { setupAudienciaPericiaListaHandler } from './handlers/audienciaPericiaListaHandler.js';
 import { setupProcessActionsHandler } from './handlers/processActionsHandler.js';
+import express from 'express';
 
 async function bootstrap() {
   const token = process.env.BOT_TOKEN;
@@ -102,6 +103,17 @@ async function bootstrap() {
   process.once('SIGINT', () => bot.stop('SIGINT'));
   process.once('SIGTERM', () => bot.stop('SIGTERM'));
 }
+
+const app = express();
+
+app.get('/', (req, res) => {
+  res.send('Bot online!');
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor web rodando na porta ${PORT}`);
+});
 
 bootstrap().catch((err) => {
   console.error('❌ Erro ao iniciar o bot:', err);
